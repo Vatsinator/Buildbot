@@ -2,17 +2,26 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import os
+import sys
 from ConfigParser import ConfigParser
+
 from txutils import txupdate
 
-def readConfig(file = 'config.ini'):
+
+def read_config(file='config.ini'):
+  if not os.path.isfile(file):
+    print("Config file missing")
+    sys.exit(1)
+  
   config = ConfigParser()
   config.read(file)
   return config
 
+
 def main():
   '''
-  Parse command line options, read config and run desired action.  
+  Parse command line options, read config and run desired action.
   '''
   description = "Vatsinator Buildbot automates server-side actions."
   
@@ -25,10 +34,15 @@ def main():
   
   args = parser.parse_args()
   
-  config = readConfig(args.configFile)
+  config = read_config(args.configFile)
   
   if args.command == 'txupdate':
-    txupdate(config.get('Repository', 'vatsinator'))
+    if not config.has_section('Repository'):
+      print("Missing 'Repository' section in config file. See config.ini.sample for reference")
+      sys.exit(1)
+    
+    txupdate(repodir=config.get('Repository', 'vatsinator'),
+             txbranch=config.get('Repository', 'txbranch'))
   
 
 if __name__ == "__main__":

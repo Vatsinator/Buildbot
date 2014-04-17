@@ -7,3 +7,6 @@
 
 # Vatsinator repository location
 vatsinator = /path/to/repo
+
+# Branch to work with translations
+txbranch = develop
