@@ -1,0 +1,9 @@
+#
+# Sample config file for Vatsinator's Buildbot
+# Rename it to config.ini and modify values below according to your needs
+#
+
+[Repository]
+
+# Vatsinator repository location
+vatsinator = /path/to/repo
