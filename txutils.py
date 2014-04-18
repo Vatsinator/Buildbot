@@ -48,7 +48,13 @@ def _repo_pull(repo):
   git pull
   '''
   o = repo.remotes.origin
-  o.pull()
+  try:
+    o.pull()
+  except AssertionError:
+    '''
+    There is this bug, still unresolved. But pull is successful.
+    '''
+    pass
   
 
 def txupdate(**kwargs):
