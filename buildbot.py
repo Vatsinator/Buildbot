@@ -42,6 +42,7 @@ def main():
             sys.exit(1)
         
         txupdate(repodir=config.get('Repository', 'vatsinator'),
+                 i18ndir=config.get('Translations', 'i18ndir'),
                  txbranch=config.get('Translations', 'txbranch'),
                  txgencmd=config.get('Translations', 'txgencmd')
                  )

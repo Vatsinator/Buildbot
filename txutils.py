@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import git
 import os
+import sh
 import sys
 from txclib import commands as tx
 
@@ -11,52 +11,6 @@ Raised when local clone of the repository is not prepared to work with
 '''
 class RepoCloneDirtyError(Exception):
     pass
-
-'''
-Raised when the specified repo path does not exist
-'''
-class NoSuchPathError(Exception):
-    pass
-
-
-def _get_repo(dir):
-    '''
-    Get reference to repo, check if its okay and on desired branch
-    '''
-    try:
-        repo = git.Repo(dir)
-    
-        if repo.bare:
-            raise RepoCloneDirtyError("The repository is empty")
-    
-        if repo.is_dirty():
-            raise RepoCloneDirtyError("Your local clone of the repository has uncommited changes")
-        return repo
-  
-    except git.NoSuchPathError as e:
-        raise NoSuchPathError("The specified path (%s) does not exist" % e)
-
-
-def _repo_checkout_branch(repo, branch):
-    '''
-    Switch to the specified branch.
-    '''
-    myBranch = getattr(repo.heads, branch)
-    myBranch.checkout()
-
-
-def _repo_pull(repo):
-    '''
-    git pull
-    '''
-    o = repo.remotes.origin
-    try:
-        o.pull()
-    except AssertionError:
-        '''
-        There is this bug, still unresolved. But pull is successful.
-        '''
-        pass
 
 
 def _tx_update_source(cmd, path):
@@ -82,17 +36,30 @@ def txupdate(**kwargs):
     
     txgencmd = txgencmd.replace('%REPO%', repoDir)
     
-    repo = _get_repo(repoDir)
+    git = sh.git.bake(_cwd=repoDir)
+    diff = git.diff('--no-ext-diff', '--quiet', '--exit-code')
+    if len(diff) > 0:
+        raise RepoCloneDirtyError('Your local clone of Vatsinator repository is not clean!')
     
     print("Checking out branch %s..." % txbranch)
-    _repo_checkout_branch(repo, txbranch)
-    
-    print("Pulling repository...")
-    _repo_pull(repo)
+    git.checkout(txbranch)
+
+    print("Pulling...")
+    git.pull()
 
     print("Updating source translation...")
     _tx_update_source(txgencmd, repoDir)
 
     print("Pulling translations...")
     _tx_pull(repoDir)
+
+    diff = git.diff('--no-ext-diff', '--quiet', '--exit-code')
+    clean = len(diff) == 0
+
+    if clean:
+        print("No new translations.")
+    else:
+        print("Pushing new translations to the repo...")
+        git.add('.')
+        git.commit('-am', 'Automatic translations update from Transifex\n')
 
