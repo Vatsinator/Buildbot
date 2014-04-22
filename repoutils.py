@@ -19,6 +19,21 @@ class NoSuchBranchError(Exception):
     pass
 
 
+class DirtyRepoError(Exception):
+    '''
+    Exception is raised when one tries to perform a pull on the repository
+    that has uncommited changes in the working tree.
+    '''
+    pass
+
+
+class NoSuchRemoteError(Exception):
+    '''
+    Exception raised when the repository has no such remote configured.
+    '''
+    pass
+
+
 class Repository:
     '''
     The Repository class represents the single git repository for either
@@ -43,7 +58,7 @@ class Repository:
         '''
         gitbranch = self.repo.lookup_branch(branch)
         try:
-            self.repo.checkout(gitbranch.name)
+            self.repo.checkout(gitbranch.name, pygit2.GIT_CHECKOUT_FORCE)
         except AttributeError:
             raise NoSuchBranchError("Branch %s does not exist" % branch)
     
@@ -56,5 +71,42 @@ class Repository:
             if flags != pygit2.GIT_STATUS_CURRENT and flags != pygit2.GIT_STATUS_IGNORED:
                 return False
         return True
+    
+    def pull(self):
+        '''
+        Equivalent to git pull.
+        '''
+        if not self.is_clean():
+            raise DirtyRepoError("The repository (%s) has uncommited changes" % self.path)
+        
+        # get current branch
+        branch = None
+        for b in [self.repo.lookup_branch(x) for x in self.repo.listall_branches()]:
+            if b.is_head():
+                branch = b
+                break
 
+        if branch is None:
+            raise DirtyRepoError("The repository (%s) is not on the upstream branch" % self.path)
+        
+        fetchresult = None
+        remotename = u'origin'
+        for r in self.repo.remotes:
+            if r.name == remotename:
+                fetchresult = r.fetch()
+                break
+        
+        if fetchresult is None:
+            raise NoSuchRemoteError("The repository (%s) has no remote named %s" % (self.branch, remotename))
+
+        upstream = branch.upstream
+        # merge with the upstream tree
+        mergeresult = self.repo.merge(upstream.target)
+        if mergeresult.is_uptodate: # nothing new
+            return
+        # update head
+        self.repo.head.resolve().target = mergeresult.fastforward_oid
+        # update working tree
+        self.repo.reset(mergeresult.fastforward_oid, pygit2.GIT_RESET_HARD)
+        
 
