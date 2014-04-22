@@ -108,5 +108,43 @@ class Repository:
         self.repo.head.resolve().target = mergeresult.fastforward_oid
         # update working tree
         self.repo.reset(mergeresult.fastforward_oid, pygit2.GIT_RESET_HARD)
+
+    def commit(self, message, author, add_new=False, **kwargs):
+        '''
+        Equivalent to git commit.
+        Message can be either a string or an array of strings, in which case
+        each string is treated as a separate paragraph.
+        Author is a (name, email) tuple.
+        If add_new is True, this function will automatically add new files
+        to the index.
+        To specify additional commit info, you can pass the following
+        arguments in kwargs:
+        'committer' : (name, email) tuple, default: author
+        '''
+
+        if isinstance(message, list):
+            message = '\n'.join(message)
         
+        author = pygit2.Signature(author[0], author[1])
+        
+        try:
+            committer = pygit2.Signature(kwargs['committer'][0], kwargs['committer'][1])
+        except (IndexError, KeyError):
+            committer = author         
+        
+        # update index
+        index = self.repo.index
+        index.read()
+        for filepath, flags in self.repo.status().items():
+            if flags == pygit2.GIT_STATUS_WT_NEW:
+                if add_new:
+                    index.add(filepath)
+            elif flags == pygit2.GIT_STATUS_WT_MODIFIED:
+                index.add(filepath)
+        index.write()
+
+        treeid = self.repo.index.write_tree()
+        head = self.repo.head
+        commit = self.repo.create_commit('HEAD', author, committer, message, treeid, [head.target])
+
 
