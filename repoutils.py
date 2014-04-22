@@ -71,6 +71,25 @@ class Repository:
             if flags != pygit2.GIT_STATUS_CURRENT and flags != pygit2.GIT_STATUS_IGNORED:
                 return False
         return True
+
+    def get_current_branch(self):
+        '''
+        Gets current branch, but only if the current branch is on HEAD.
+        Otherwise returns None.
+        '''
+        for b in [self.repo.lookup_branch(x) for x in self.repo.listall_branches()]:
+            if b.is_head():
+                return b
+        return None
+
+    def get_remote(self, name='origin'):
+        '''
+        Obtains remote reference by the specified name.
+        '''
+        for r in self.repo.remotes:
+            if r.name == name:
+                return r
+        return None
     
     def pull(self):
         '''
@@ -80,25 +99,15 @@ class Repository:
             raise DirtyRepoError("The repository (%s) has uncommited changes" % self.path)
         
         # get current branch
-        branch = None
-        for b in [self.repo.lookup_branch(x) for x in self.repo.listall_branches()]:
-            if b.is_head():
-                branch = b
-                break
-
+        branch = self.get_current_branch()
         if branch is None:
             raise DirtyRepoError("The repository (%s) is not on the upstream branch" % self.path)
-        
-        fetchresult = None
-        remotename = u'origin'
-        for r in self.repo.remotes:
-            if r.name == remotename:
-                fetchresult = r.fetch()
-                break
-        
-        if fetchresult is None:
-            raise NoSuchRemoteError("The repository (%s) has no remote named %s" % (self.branch, remotename))
 
+        remote = self.get_remote()
+        if remote is None:
+            raise NoSuchRemoteError("The repository (%s) has no remote named %s" % (self.branch, remotename))
+        fetchresult = remote.fetch()
+        
         upstream = branch.upstream
         # merge with the upstream tree
         mergeresult = self.repo.merge(upstream.target)
@@ -146,5 +155,13 @@ class Repository:
         treeid = self.repo.index.write_tree()
         head = self.repo.head
         commit = self.repo.create_commit('HEAD', author, committer, message, treeid, [head.target])
+
+    def push(self):
+        '''
+        Equivalent to git push.
+        '''
+        remote = self.get_remote()
+        branch = self.get_current_branch()
+        remote.push(branch.name)
 
 
