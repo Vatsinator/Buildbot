@@ -2,15 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sh
 import sys
 from txclib import commands as tx
-
-'''
-Raised when local clone of the repository is not prepared to work with
-'''
-class RepoCloneDirtyError(Exception):
-    pass
+from repoutils import *
 
 
 def _tx_update_source(cmd, path):
@@ -36,16 +30,13 @@ def txupdate(**kwargs):
     
     txgencmd = txgencmd.replace('%REPO%', repoDir)
     
-    git = sh.git.bake(_cwd=repoDir)
-    diff = git.diff('--no-ext-diff', '--quiet', '--exit-code')
-    if len(diff) > 0:
-        raise RepoCloneDirtyError('Your local clone of Vatsinator repository is not clean!')
+    repo = Repository(repoDir)
     
     print("Checking out branch %s..." % txbranch)
-    git.checkout(txbranch)
+    repo.checkout(txbranch)
 
     print("Pulling...")
-    git.pull()
+    repo.pull()
 
     print("Updating source translation...")
     _tx_update_source(txgencmd, repoDir)
@@ -53,13 +44,11 @@ def txupdate(**kwargs):
     print("Pulling translations...")
     _tx_pull(repoDir)
 
-    diff = git.diff('--no-ext-diff', '--quiet', '--exit-code')
-    clean = len(diff) == 0
-
-    if clean:
+    if repo.is_clean():
         print("No new translations.")
     else:
         print("Pushing new translations to the repo...")
-        git.add('.')
-        git.commit('-am', 'Automatic translations update from Transifex\n')
+        repo.commit(['Automatic translations update from Transifex', 'https://www.transifex.com/projects/p/vatsinator/'],
+            ('Vatsinator Buildbot', 'buildbot@vatsinator.eu.org'), True)
+        repo.push()
 
