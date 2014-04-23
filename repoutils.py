@@ -43,7 +43,8 @@ class Repository:
 
     def __init__(self, path):
         '''
-        Constructor takes path to the git repository. Can raise NotAGitRepoError.
+        Constructor takes path to the git repository.
+        Can raise NotAGitRepoError.
         '''
         self.path = path
         try:
@@ -51,7 +52,7 @@ class Repository:
             self.repo = pygit2.Repository(gitdir)
         except KeyError:
             raise NotAGitRepoError("Not a git repository: %s" % path)
-    
+
     def checkout(self, branch):
         '''
         Equivalent to git checkout _branch_.
@@ -61,7 +62,7 @@ class Repository:
             self.repo.checkout(gitbranch.name, pygit2.GIT_CHECKOUT_FORCE)
         except AttributeError:
             raise NoSuchBranchError("Branch %s does not exist" % branch)
-    
+
     def is_clean(self):
         '''
         This method checks if the repository is clean, i.e. it does not have
@@ -90,14 +91,14 @@ class Repository:
             if r.name == name:
                 return r
         return None
-    
+
     def pull(self):
         '''
         Equivalent to git pull.
         '''
         if not self.is_clean():
             raise DirtyRepoError("The repository (%s) has uncommited changes" % self.path)
-        
+
         # get current branch
         branch = self.get_current_branch()
         if branch is None:
@@ -105,13 +106,13 @@ class Repository:
 
         remote = self.get_remote()
         if remote is None:
-            raise NoSuchRemoteError("The repository (%s) has no remote named %s" % (self.branch, remotename))
+            raise NoSuchRemoteError("The repository (%s) has no remote named %s" % (self.branch, 'origin'))
         fetchresult = remote.fetch()
-        
+
         upstream = branch.upstream
         # merge with the upstream tree
         mergeresult = self.repo.merge(upstream.target)
-        if mergeresult.is_uptodate: # nothing new
+        if mergeresult.is_uptodate:  # nothing new
             return
         # update head
         self.repo.head.resolve().target = mergeresult.fastforward_oid
@@ -128,19 +129,19 @@ class Repository:
         to the index.
         To specify additional commit info, you can pass the following
         arguments in kwargs:
-        'committer' : (name, email) tuple, default: author
+        committer : (name, email) tuple, default: author
         '''
 
         if isinstance(message, list):
             message = '\n'.join(message)
-        
+
         author = pygit2.Signature(author[0], author[1])
-        
+
         try:
             committer = pygit2.Signature(kwargs['committer'][0], kwargs['committer'][1])
         except (IndexError, KeyError):
-            committer = author         
-        
+            committer = author
+
         # update index
         index = self.repo.index
         index.read()

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -25,11 +24,11 @@ def _tx_pull(path):
 
 def txupdate(**kwargs):
     repoDir = kwargs['repodir']
+    author = kwargs['author']
     txbranch = kwargs['txbranch']
     txgencmd = kwargs['txgencmd']
     
     txgencmd = txgencmd.replace('%REPO%', repoDir)
-    
     repo = Repository(repoDir)
     
     print("Checking out branch %s..." % txbranch)
@@ -49,6 +48,6 @@ def txupdate(**kwargs):
     else:
         print("Pushing new translations to the repo...")
         repo.commit(['Automatic translations update from Transifex', 'https://www.transifex.com/projects/p/vatsinator/'],
-            ('Vatsinator Buildbot', 'buildbot@vatsinator.eu.org'), True)
+            author, True)
         repo.push()
 

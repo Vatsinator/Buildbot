@@ -8,6 +8,10 @@
 # Vatsinator repository location
 vatsinator = /path/to/repo
 
+# Author of the commits
+author_name = Vatsinator Buildbot
+author_email = buildbot@vatsinator.eu.org
+
 
 [Translations]
 

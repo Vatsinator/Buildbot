@@ -42,7 +42,7 @@ def main():
             sys.exit(1)
         
         txupdate(repodir=config.get('Repository', 'vatsinator'),
-                 i18ndir=config.get('Translations', 'i18ndir'),
+                 author=(config.get('Repository', 'author_name'), config.get('Repository', 'author_email')),
                  txbranch=config.get('Translations', 'txbranch'),
                  txgencmd=config.get('Translations', 'txgencmd')
                  )
