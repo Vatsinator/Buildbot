@@ -125,17 +125,17 @@ class Repository(object):
         remote = self.get_remote()
         if remote is None:
             raise NoSuchRemoteError("The repository (%s) has no remote named %s" % (self.branch, 'origin'))
-        fetchresult = remote.fetch()
+        remote.fetch()
 
         upstream = branch.upstream
         # merge with the upstream tree
-        mergeresult = self.repo.merge(upstream.target)
-        if mergeresult.is_uptodate:  # nothing new
+        merge_result = self.repo.merge(upstream.target)
+        if merge_result.is_uptodate:  # nothing new
             return
         # update head
-        self.repo.head.resolve().target = mergeresult.fastforward_oid
+        self.repo.head.resolve().target = merge_result.fastforward_oid
         # update working tree
-        self.repo.reset(mergeresult.fastforward_oid, pygit2.GIT_RESET_HARD)
+        self.repo.reset(merge_result.fastforward_oid, pygit2.GIT_RESET_HARD)
 
     def commit(self, message, author, add_new=False, **kwargs):
         """
