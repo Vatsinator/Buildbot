@@ -10,6 +10,12 @@ from txutils import txupdate
 
 
 def read_config(file='config.ini'):
+    """
+    Read config file.
+
+    Args:
+        file: path to the config file.
+    """
     if not os.path.isfile(file):
         print("Config file missing")
         sys.exit(1)
@@ -20,9 +26,9 @@ def read_config(file='config.ini'):
 
 
 def main():
-    '''
+    """
     Parse command line options, read config and run desired action.
-    '''
+    """
     description = "Vatsinator Buildbot automates server-side actions."
     
     parser = argparse.ArgumentParser(description=description)

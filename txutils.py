@@ -7,18 +7,18 @@ from repoutils import *
 
 
 def _tx_update_source(cmd, path):
-    '''
+    """
     Calls cmd to generate new source translation and
     pushes new source to transifex.
-    '''
+    """
     os.system(cmd)
     tx.cmd_push(['--source'], path)
 
 
 def _tx_pull(path):
-    '''
+    """
     Pull translations from Transifex
-    '''
+    """
     tx.cmd_pull(['--all', '--source', '--force'], path)
   
 
