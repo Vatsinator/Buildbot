@@ -12,9 +12,8 @@ from txutils import txupdate
 def read_config(file='config.ini'):
     """
     Read config file.
-
-    Args:
-        file: path to the config file.
+    @param file:  The config file location.
+    @return: Config.
     """
     if not os.path.isfile(file):
         print("Config file missing")

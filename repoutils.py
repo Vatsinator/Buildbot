@@ -43,13 +43,10 @@ class Repository(object):
 
     def __init__(self, path):
         """
-        Constructor initializes the object on the existing git repository.
-
-        Args:
-            path: path to the initialized git repository.
-
-        Raises:
-            NotAGitRepoError
+        Initialize the Repository instance in the given path. The directory
+        under path has to contain .git.
+        @type path: str
+        @raise NotAGitRepoError: The given path is not a git directory.
         """
         self.path = path
         try:
@@ -61,12 +58,8 @@ class Repository(object):
     def checkout(self, branch):
         """
         Equivalent to git checkout _branch_.
-
-        Args:
-            branch: the branch name; must be a local branch.
-
-        Raises:
-            NoSuchBranchError
+        @param branch: The branch name; must be a local branch.
+        @raise NoSuchBranchError: The given repository has no branch of the given name.
         """
         gitbranch = self.repo.lookup_branch(branch)
         try:
@@ -76,18 +69,19 @@ class Repository(object):
 
     def is_clean(self):
         """
-        This method checks if the repository is clean, i.e. it does not have
-        any changes in the current working tree. Returns False instead.
+        Check if the repository is clean, i.e. it does not have any changes in the current working tree.
+        @return: True if the current working tree is clean, False otherwise.
         """
         for filepath, flags in self.repo.status().items():
             if flags != pygit2.GIT_STATUS_CURRENT and flags != pygit2.GIT_STATUS_IGNORED:
                 return False
         return True
 
-    def get_current_branch(self):
+    @property
+    def current_branch(self):
         """
-        Gets current branch, but only if the current branch is on HEAD.
-        Otherwise returns None.
+        Get current branch reference, but only if the current branch is on HEAD.
+        @return: The current local branch reference or None, if on detached state.
         """
         for b in [self.repo.lookup_branch(x) for x in self.repo.listall_branches()]:
             if b.is_head():
@@ -96,10 +90,9 @@ class Repository(object):
 
     def get_remote(self, name='origin'):
         """
-        Obtains remote reference by the specified name.
-
-        Args:
-            name: the remote reference name.
+        Obtain remote reference of the specified name.
+        @param name: Name of the remote.
+        @return: The remote reference.
         """
         for r in self.repo.remotes:
             if r.name == name:
@@ -108,17 +101,14 @@ class Repository(object):
 
     def pull(self):
         """
-        Equivalent to git pull.
-
-        Raises:
-            DirtyRepoError
-            NoSuchRemoteError
+        Pull the current branch from remote.
+        @raise NoSuchRemoteError: The current branch does not have the remote origin.
+        @raise DirtyRepoError: The working directory is not clean.
         """
         if not self.is_clean():
             raise DirtyRepoError("The repository (%s) has uncommited changes" % self.path)
 
-        # get current branch
-        branch = self.get_current_branch()
+        branch = self.current_branch
         if branch is None:
             raise DirtyRepoError("The repository (%s) is not on the upstream branch" % self.path)
 
@@ -130,27 +120,21 @@ class Repository(object):
         upstream = branch.upstream
         # merge with the upstream tree
         merge_result = self.repo.merge(upstream.target)
-        if merge_result.is_uptodate:  # nothing new
-            return
-        # update head
-        self.repo.head.resolve().target = merge_result.fastforward_oid
-        # update working tree
-        self.repo.reset(merge_result.fastforward_oid, pygit2.GIT_RESET_HARD)
+        if not merge_result.is_uptodate:
+            # update head
+            self.repo.head.resolve().target = merge_result.fastforward_oid
+            # update working tree
+            self.repo.reset(merge_result.fastforward_oid, pygit2.GIT_RESET_HARD)
 
     def commit(self, message, author, add_new=False, **kwargs):
         """
         Equivalent to git commit.
-
-        Args:
-            message: commit message; can be either a string or an array of strings, in which case
+        @param message: The commit message; can be either a string or an array of strings, in which case
                 each string is treated as a separate paragraph.
-            author: commit author, (name, email) tuple.
-            add_new: if True, this function will automatically add new files to the index.
-        
-        Kwargs:
-            committer: (name, email) tuple, default: author
+        @param author: The commit author; (name, email) tuple.
+        @param add_new: Add new files to the index.
+        @param kwargs: committer: The commit maker; (name, email) tuple.
         """
-
         if isinstance(message, list):
             message = '\n'.join(message)
 
@@ -178,7 +162,7 @@ class Repository(object):
 
     def push(self):
         """
-        Equivalent to git push.
+        Push to the remote.
         """
         remote = self.get_remote()
         branch = self.get_current_branch()

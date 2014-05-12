@@ -11,6 +11,8 @@ def _tx_update_source(cmd, path):
     """
     Calls cmd to generate new source translation and
     pushes new source to transifex.
+    @param cmd: Command to call before pusing the source.
+    @param path: Path of the transifex directory.
     """
     os.system(cmd)
     tx.cmd_push(['--source'], path)
@@ -18,12 +20,16 @@ def _tx_update_source(cmd, path):
 
 def _tx_pull(path):
     """
-    Pull translations from Transifex
+    Pull translations from Transifex.
     """
     tx.cmd_pull(['--all', '--source', '--force'], path)
 
 
 def txupdate(**kwargs):
+    """
+
+    @param kwargs:
+    """
     repo_dir = kwargs['repodir']
     author = kwargs['author']
     txbranch = kwargs['txbranch']
