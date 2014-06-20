@@ -41,14 +41,18 @@ def _find_lupdate():
 def _tx_update_source(path):
     """
     Push new source to Transifex.
-    :param path: Path to Transifex project.
+    :param path: Path to Vatsinator directory.
     """
     lupdate = _find_lupdate()
-    r = subprocess.call([lupdate, '-recursive', '%s/source/' % path, '-no-obsolete'])
+    r = subprocess.call([lupdate, '-recursive', '%s/source/' % path,
+                         '-source-language', 'en_GB',
+                         '-target-language', 'en_GB',
+                         '-ts', '%s/source/i18n/vatsinator-en.ts' % path,
+                         '-no-obsolete'])
     if r != 0:
         raise LupdateExecError(lupdate)
 
-    # push source for vatsinator application
+    # push source for vatsinator.application only
     tx.cmd_push(['--source', '--resource=vatsinator.application'], path)
 
 
