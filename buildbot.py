@@ -28,7 +28,7 @@ def main():
     """
     Parse command line options, read config and run desired action.
     """
-    description = "Vatsinator Buildbot automates server-side actions."
+    description = "Vatsinator Buildbot automates server-side procedures for Vatsinator."
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('command', choices=['txupdate'],
@@ -48,8 +48,7 @@ def main():
 
         txupdate(repodir=config.get('Repository', 'vatsinator'),
                  author=(config.get('Repository', 'author_name'), config.get('Repository', 'author_email')),
-                 txbranch=config.get('Translations', 'txbranch'),
-                 txgencmd=config.get('Translations', 'txgencmd')
+                 txbranch=config.get('Translations', 'txbranch')
         )
 
 

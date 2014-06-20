@@ -17,6 +17,3 @@ author_email = buildbot@vatsinator.eu.org
 
 # Branch to work with translations
 txbranch = develop
-
-# Command that will be called in order to regenerate source translation files
-txgencmd = lupdate -recursive %REPO%/source/ -no-obsolete

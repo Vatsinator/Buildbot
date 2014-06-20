@@ -158,14 +158,14 @@ class Repository(object):
 
         treeid = self.repo.index.write_tree()
         head = self.repo.head
-        commit = self.repo.create_commit('HEAD', author, committer, message, treeid, [head.target])
+        self.repo.create_commit('HEAD', author, committer, message, treeid, [head.target])
 
     def push(self):
         """
         Push to the remote.
         """
         remote = self.get_remote()
-        branch = self.get_current_branch()
+        branch = self.current_branch
         remote.push(branch.name)
 
 

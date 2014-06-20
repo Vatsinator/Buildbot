@@ -1,4 +1,4 @@
 Buildbot
 ========
 
-Buildbot for Vatsinator
+Vatsinator Buildbot automates server-side procedures for Vatsinator.
