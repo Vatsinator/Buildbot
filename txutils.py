@@ -5,6 +5,7 @@ import subprocess
 
 from txclib import commands as tx
 
+import logger
 from repoutils import *
 
 
@@ -69,24 +70,25 @@ def txupdate(**kwargs):
 
     repo = Repository(repo_dir)
 
-    print("Checking out branch %s..." % txbranch)
+    logger.info('Checking out branch %s...' % txbranch)
     repo.checkout(txbranch)
 
-    print("Pulling...")
+    logger.info('Pulling repository...')
     repo.pull()
 
-    print("Updating source translation...")
+    logger.info('Updating source translation...')
     _tx_update_source(repo_dir)
 
-    print("Pulling translations...")
+    logger.info('Pulling translations from Transifex...')
     _tx_pull(repo_dir)
 
     if repo.is_clean():
-        print("No new translations.")
+        logger.info('No new translations.')
     else:
-        print("Pushing new translations to the repo...")
+        logger.info('Pushing new translations to the repository...')
         repo.commit(
             ['Automatic translations update from Transifex', 'https://www.transifex.com/projects/p/vatsinator/'],
             author, True)
         repo.push()
 
+    logger.info('txupdate completed.')

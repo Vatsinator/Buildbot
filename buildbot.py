@@ -6,6 +6,7 @@ import os
 import sys
 from ConfigParser import ConfigParser
 
+import logger
 from txutils import txupdate
 
 
@@ -33,13 +34,19 @@ def main():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('command', choices=['txupdate'],
                         help='command to be run', metavar='command')
-    parser.add_argument('--config', '-c', dest='configFile', default='config.ini',
+    parser.add_argument('--config', '-c', dest='config_file', default='config.ini',
                         help='config file location (default: config.ini)',
                         metavar='config_file')
+    parser.add_argument('--logfile', '-l', dest='log_file', default='stdout',
+                        help='file to log actions (default: stdout)', metavar='log_file')
 
     args = parser.parse_args()
 
-    config = read_config(args.configFile)
+    config = read_config(args.config_file)
+    log_file = args.log_file
+    if log_file != 'stdout':
+        f = open(log_file, 'a')
+        logger.output = f
 
     if args.command == 'txupdate':
         if not config.has_section('Repository'):
