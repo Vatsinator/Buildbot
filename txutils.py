@@ -27,7 +27,7 @@ class LupdateExecError(Exception):
 def _find_lupdate():
     """
     Find lupdate program in the system.
-    :return: The lupdate exec complete path.
+    @return: The lupdate exec complete path.
     """
     names = ['lupdate', 'lupdate-qt4']
     for p in os.environ['PATH'].split(':'):
@@ -41,7 +41,7 @@ def _find_lupdate():
 def _tx_update_source(path):
     """
     Push new source to Transifex.
-    :param path: Path to Vatsinator directory.
+    @param path: Path to Vatsinator directory.
     """
     lupdate = _find_lupdate()
     r = subprocess.call([lupdate, '-recursive', '%s/source/' % path,
@@ -66,7 +66,7 @@ def _tx_pull(path):
 def txupdate(**kwargs):
     """
     Pull Vatsinator repository, update transifex source, pull new translations and push them to the main repository.
-    @param kwargs:
+    @param kwargs: txupdate arguments (repodir, author, txbranch).
     """
     repo_dir = kwargs['repodir']
     author = kwargs['author']

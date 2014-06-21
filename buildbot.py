@@ -17,7 +17,7 @@ def read_config(file='config.ini'):
     @return: Config.
     """
     if not os.path.isfile(file):
-        print("Config file missing")
+        print('Config file missing')
         sys.exit(1)
 
     config = ConfigParser()
@@ -29,7 +29,7 @@ def main():
     """
     Parse command line options, read config and run desired action.
     """
-    description = "Vatsinator Buildbot automates server-side procedures for Vatsinator."
+    description = 'Vatsinator Buildbot automates server-side procedures for Vatsinator.'
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('command', choices=['txupdate'],
