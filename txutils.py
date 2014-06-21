@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import subprocess
 
@@ -95,4 +93,4 @@ def txupdate(**kwargs):
             author, True)
         repo.push()
 
-    logger.info('txupdate completed.')
+    logger.info('txupdate done.')

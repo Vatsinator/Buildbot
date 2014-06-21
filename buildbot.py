@@ -8,20 +8,21 @@ from ConfigParser import ConfigParser
 
 import logger
 from txutils import txupdate
+from vatsimutils import clone_status
 
 
-def read_config(file='config.ini'):
+def read_config(file_name='config.ini'):
     """
     Read config file.
-    @param file:  The config file location.
+    @param file_name:  The config file location.
     @return: Config.
     """
-    if not os.path.isfile(file):
+    if not os.path.isfile(file_name):
         print('Config file missing')
         sys.exit(1)
 
     config = ConfigParser()
-    config.read(file)
+    config.read(file_name)
     return config
 
 
@@ -32,7 +33,7 @@ def main():
     description = 'Vatsinator Buildbot automates server-side procedures for Vatsinator.'
 
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('command', choices=['txupdate'],
+    parser.add_argument('command', choices=['txupdate', 'clone_status'],
                         help='command to be run', metavar='command')
     parser.add_argument('--config', '-c', dest='config_file', default='config.ini',
                         help='config file location (default: config.ini)',
@@ -50,14 +51,19 @@ def main():
 
     if args.command == 'txupdate':
         if not config.has_section('Repository'):
-            print("Missing 'Repository' section in config file. See config.ini.sample for reference")
+            print('Missing \'Repository\' section in the config file. See config.ini.sample for reference.')
             sys.exit(1)
 
         txupdate(repodir=config.get('Repository', 'vatsinator'),
                  author=(config.get('Repository', 'author_name'), config.get('Repository', 'author_email')),
                  txbranch=config.get('Translations', 'txbranch')
         )
+    elif args.command == 'clone_status':
+        if not config.has_section('Vatsim'):
+            print('Missing \'Vatsim\' section in the config file. See config.init.sample for reference.')
+            sys.exit(1)
 
+        clone_status(config.get('Vatsim', 'status_file'))
 
 if __name__ == "__main__":
     main()
