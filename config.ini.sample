@@ -13,6 +13,24 @@ author_name = Vatsinator Buildbot
 author_email = buildbot@vatsinator.eu.org
 
 
+[Database]
+
+# Database host
+host = localhost
+
+# User of the database
+user = buildbot
+
+# Password for the user
+passwd = 1234
+
+# Database to be used
+db = VatsinatorDatabase
+
+# Name of the django's automatically created table for "airports.Airport" model
+airports_table_name = airports_airport
+
+
 [Translations]
 
 # Branch to work with translations

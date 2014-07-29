@@ -7,6 +7,7 @@ import sys
 from ConfigParser import ConfigParser
 
 import logger
+from dbutils import fetch_airports
 from txutils import txupdate
 from vatsimutils import clone_status
 
@@ -33,7 +34,7 @@ def main():
     description = 'Vatsinator Buildbot automates server-side procedures for Vatsinator.'
 
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('command', choices=['txupdate', 'clone_status'],
+    parser.add_argument('command', choices=['txupdate', 'clone_status', 'fetch_airports'],
                         help='command to be run', metavar='command')
     parser.add_argument('--config', '-c', dest='config_file', default='config.ini',
                         help='config file location (default: config.ini)',
@@ -60,10 +61,16 @@ def main():
         )
     elif args.command == 'clone_status':
         if not config.has_section('Vatsim'):
-            print('Missing \'Vatsim\' section in the config file. See config.init.sample for reference.')
+            print('Missing \'Vatsim\' section in the config file. See config.ini.sample for reference.')
             sys.exit(1)
 
         clone_status(config.get('Vatsim', 'status_file'))
+    elif args.command == 'fetch_airports':
+        if not config.has_section('Database'):
+            print('Missing \'Database\' section in the config file. See config.ini.sample for reference.')
+            sys.exit(1)
+
+        fetch_airports(config)
 
 if __name__ == "__main__":
     main()
