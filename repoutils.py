@@ -61,7 +61,7 @@ class Repository(object):
         """
         gitbranch = self.repo.lookup_branch(branch)
         try:
-            self.repo.checkout(gitbranch.name, pygit2.GIT_CHECKOUT_FORCE)
+            self.repo.checkout(gitbranch.name, strategy=pygit2.GIT_CHECKOUT_FORCE)
         except AttributeError:
             raise NoSuchBranchError("Branch %s does not exist" % branch)
 
@@ -116,13 +116,16 @@ class Repository(object):
         remote.fetch()
 
         upstream = branch.upstream
-        # merge with the upstream tree
-        merge_result = self.repo.merge(upstream.target)
-        if not merge_result.is_uptodate:
-            # update head
-            self.repo.head.resolve().target = merge_result.fastforward_oid
-            # update working tree
-            self.repo.reset(merge_result.fastforward_oid, pygit2.GIT_RESET_HARD)
+        merge_result, _ = self.repo.merge_analysis(upstream.target)
+
+        if merge_result & pygit2.GIT_MERGE_ANALYSIS_UP_TO_DATE: # up to date
+            return
+        elif merge_result & pygit2.GIT_MERGE_ANALYSIS_FASTFORWARD: # we can fast-forward
+            self.repo.checkout_tree(self.repo.get(upstream.target))
+            branch.set_target(upstream.target)
+            self.repo.head.set_target(upstream.target)
+        else:
+            raise AssertionError("Could not pull properly")
 
     def commit(self, message, author, add_new=False, **kwargs):
         """
@@ -164,6 +167,6 @@ class Repository(object):
         """
         remote = self.get_remote()
         branch = self.current_branch
-        remote.push(branch.name)
+        remote.push([branch.name])
 
 
