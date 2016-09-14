@@ -42,10 +42,10 @@ def _tx_update_source(path):
     @param path: Path to Vatsinator directory.
     """
     lupdate = _find_lupdate()
-    r = subprocess.call([lupdate, '-recursive', '%s/source/' % path,
+    r = subprocess.call([lupdate, '-recursive', '%s/src/' % path,
                          '-source-language', 'en_GB',
                          '-target-language', 'en_GB',
-                         '-ts', '%s/source/i18n/vatsinator-en.ts' % path,
+                         '-ts', '%s/src/i18n/vatsinator_en.ts' % path,
                          '-no-obsolete'])
     if r != 0:
         raise LupdateExecError(lupdate)
